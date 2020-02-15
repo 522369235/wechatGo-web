@@ -3,8 +3,8 @@
 namespace app\index\controller;
 
 use think\Controller;
+use think\Exception;
 use think\Session;
-use think\Config;
 
 // 引入类库
 
@@ -33,10 +33,10 @@ class Base extends Controller
         self::$cm = config("common");
         self::$configPath = CONF_PATH . DS . 'extra' . DS . self::$m . DS;
 
-        if (!isset($_SESSION)) {
-            $sessionConfig = \think\Config::parse(self::$configPath . 'session_config.ini', 'ini')['session_config'];
-            $this->sessionInit($sessionConfig);
-        }
+//        if (!isset($_SESSION)) {
+        $sessionConfig = \think\Config::parse(self::$configPath . 'session_config.ini', 'ini')['session_config'];
+        $this->sessionInit($sessionConfig);
+//        }
 
         $moduleName = request()->module();
         Session::prefix($moduleName);
@@ -80,10 +80,14 @@ class Base extends Controller
     {
         if (empty($sessionConfig)) {
             throw new Exception("session config error!");
-            return false;
+            // return false;
         }
 
-        Session::init($sessionConfig);
+        try {
+            Session::init($sessionConfig);
+        } catch (Exception $e) {
+            trace(["Session Init error" => $e->getMessage()], "error");
+        }
         return true;
     }
 }
